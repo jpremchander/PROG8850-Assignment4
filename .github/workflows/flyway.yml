@@ -37,11 +37,11 @@ jobs:
 
       - name: Run Flyway migrations (Init)
         run: |
-          ./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations migrate
+          ./flyway-9.22.0/flyway -url="jdbc:mysql://127.0.0.1:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations migrate
 
       - name: Run Flyway migrations (Updates)
         run: |
-          ./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations/updates migrate
+          ./flyway-9.22.0/flyway -url="jdbc:mysql://127.0.01:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations/updates migrate
 
       - name: Set up Python environment
         uses: actions/setup-python@v4
