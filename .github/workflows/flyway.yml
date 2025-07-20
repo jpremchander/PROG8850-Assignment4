@@ -31,17 +31,17 @@ jobs:
             sleep 5
           done
 
+      - name: Create 'subscribers' database
+        run: |
+          mysql -h 127.0.0.1 -P 3306 -uroot -pSecret5555 -e "CREATE DATABASE IF NOT EXISTS subscribers;"
+
       - name: Download Flyway CLI
         run: |
           curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.22.0/flyway-commandline-9.22.0-linux-x64.tar.gz | tar xz
 
-      - name: Run Flyway migrations (Init)
+      - name: Run Flyway migrations
         run: |
           ./flyway-9.22.0/flyway -url="jdbc:mysql://127.0.0.1:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations migrate
-
-      - name: Run Flyway migrations (Updates)
-        run: |
-          ./flyway-9.22.0/flyway -url="jdbc:mysql://127.0.0.1:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations/updates migrate
 
       - name: Set up Python environment
         uses: actions/setup-python@v4
