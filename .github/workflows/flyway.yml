@@ -31,9 +31,14 @@ jobs:
             sleep 5
           done
 
-      - name: Create 'subscribers' database
+      - name: Create 'subscribers' database and user with privileges
         run: |
-          mysql -h 127.0.0.1 -P 3306 -uroot -pSecret5555 -e "CREATE DATABASE IF NOT EXISTS subscribers;"
+          mysql -h 127.0.0.1 -P 3306 -uroot -pSecret5555 -e "
+            CREATE DATABASE IF NOT EXISTS subscribers;
+            CREATE USER IF NOT EXISTS 'sub_user'@'%' IDENTIFIED BY 'subpass';
+            GRANT ALL PRIVILEGES ON subscribers.* TO 'sub_user'@'%';
+            FLUSH PRIVILEGES;
+          "
 
       - name: Download Flyway CLI
         run: |
@@ -46,7 +51,7 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: 3.10
 
       - name: Install test dependencies
         run: |
