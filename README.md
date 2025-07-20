@@ -37,7 +37,7 @@ Runs unit tests for DB validation
 
 ✅ Successful CI/CD Run Screenshot
 
-
+![alt text](image.png)
 
 🐳 Docker Setup (Local)
 
@@ -45,9 +45,7 @@ You can verify that the MySQL container is running with the following:
 
 docker ps
 
-Docker Screenshot
-
-
+![alt text](image-2.png)
 
 ⚙️ Flyway Migration CLI
 
@@ -57,9 +55,7 @@ We used Flyway 9.22.0 for schema versioning and applied SQL migrations:
 -user=sub_user -password=subpass \
 -locations=filesystem:migrations migrate
 
-Flyway Run Screenshot
-
-
+![alt text](image-3.png)
 
 🧪 Python Unit Tests
 
@@ -73,8 +69,18 @@ Update subscriber
 
 Delete subscriber
 
-Unit Test Screenshot
+![alt text](image-4.png)
 
+
+📌 How to Run Locally
+
+# ansible-playbook up.yml
+
+# ansible-playbook db_setup.yml
+
+# ./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers" -user=sub_user -password=subpass -locations=filesystem:migrations migrate
+
+# python3 -m unittest discover tests
 
 
 🧩 Issues & Troubleshooting
@@ -95,18 +101,9 @@ CREATE USER IF NOT EXISTS 'sub_user'@'%' IDENTIFIED BY 'subpass';
 GRANT ALL PRIVILEGES ON subscribers.* TO 'sub_user'@'%';
 FLUSH PRIVILEGES;
 
-✅ Final Status
-
-✅ Flyway migrations run successfully both locally and in GitHub Actions
-
-✅ Python unit tests validate schema and CRUD operations
-
-✅ All errors resolved and CI pipeline is green
-
-👨‍💻 Contributors
+👨‍💻 Author
 
 Student: jpremchander
 
-Course: PROG8850 - Database Administration and Automation
+Course: PROG8850 - Database Administration and Automation -Assignment 4
 
-📌 How to Run Locally
