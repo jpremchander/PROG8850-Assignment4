@@ -1,0 +1,60 @@
+name: Flyway Migration and Test CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  migrate-and-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: Secret5555
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping -h127.0.0.1 -P 3306 --silent; do
+            echo "Waiting for MySQL..."
+            sleep 5
+          done
+
+      - name: Download Flyway CLI
+        run: |
+          curl -L https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.22.0/flyway-commandline-9.22.0-linux-x64.tar.gz | tar xz
+
+      - name: Run Flyway migrations (Init)
+        run: |
+          ./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations migrate
+
+      - name: Run Flyway migrations (Updates)
+        run: |
+          ./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers?allowPublicKeyRetrieval=true&useSSL=false" -user=root -password=Secret5555 -locations=filesystem:migrations/updates migrate
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install test dependencies
+        run: |
+          pip install mysql-connector-python
+
+      - name: Run Unit Tests
+        run: |
+          python -m unittest discover tests
+
+      - name: Deployment complete
+        run: echo "Deployment and tests completed successfully!"

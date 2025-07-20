@@ -1,0 +1,44 @@
+{
+  "individualResults": [
+    {
+      "initialSchemaVersion": null,
+      "targetSchemaVersion": "3",
+      "schemaName": "",
+      "migrations": [
+        {
+          "category": "Versioned",
+          "version": "1",
+          "description": "Create subscribers table",
+          "type": "SQL",
+          "filepath": "/workspaces/PROG8850-Assignment4/migrations/V1__Create_subscribers_table.sql",
+          "executionTime": 16
+        },
+        {
+          "category": "Versioned",
+          "version": "2",
+          "description": "Add name column",
+          "type": "SQL",
+          "filepath": "/workspaces/PROG8850-Assignment4/migrations/V2__Add_name_column.sql",
+          "executionTime": 28
+        },
+        {
+          "category": "Versioned",
+          "version": "3",
+          "description": "Create person table",
+          "type": "SQL",
+          "filepath": "/workspaces/PROG8850-Assignment4/migrations/V3__Create_person_table.sql",
+          "executionTime": 18
+        }
+      ],
+      "migrationsExecuted": 3,
+      "success": true,
+      "flywayVersion": "9.22.0",
+      "database": "subscribers",
+      "warnings": [],
+      "timestamp": "2025-07-20T07:13:00.083893892",
+      "operation": "migrate",
+      "exception": null,
+      "licenseFailed": false
+    }
+  ]
+}
