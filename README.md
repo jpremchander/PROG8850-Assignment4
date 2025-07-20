@@ -1,61 +1,112 @@
-# PROG8850Week1Installation
-install mysql, python
+PROG8850 Assignment 4: Database Automation with Flyway and CI/CD
 
-```bash
-ansible-playbook up.yml
-```
+This repository demonstrates a complete database migration and testing automation setup using Flyway, Ansible, MySQL, and GitHub Actions. The goal is to automate schema migrations and verify database functionality through unit tests.
 
-To use mysql:
+📁 Folder Structure
 
-```bash
-mysql -u root -h 127.0.0.1 -p
-```
+├── .github
+│   └── workflows
+│       └── flyway_ci.yml           # GitHub Actions workflow file
+├── flyway-9.22.0/                  # Flyway CLI extracted
+├── migrations/                     # Initial migration files
+│   ├── V1__Create_subscribers_table.sql
+│   ├── V2__Insert_seed_data.sql
+│   └── V3__Create_person_table.sql
+├── tests/
+│   └── test_subscribers.py         # Python unit tests for DB operations
+├── db_setup.yml                    # Ansible playbook to set up DB and user
+└── README.md
 
-To run github actions like (notice that the environment variables default for the local case):
+✅ GitHub Actions CI/CD Pipeline
 
-```yaml
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+Workflow Summary
 
-      - name: Install MySQL client
-        run: sudo apt-get update && sudo apt-get install -y mysql-client
+The GitHub Actions workflow performs the following:
 
-      - name: Deploy to Database
-        env:
-          DB_HOST: ${{ secrets.DB_HOST || '127.0.0.1' }} 
-          DB_USER: ${{ secrets.DB_ADMIN_USER || 'root' }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD  || 'Secret5555'}}
-          DB_NAME: ${{ secrets.DB_NAME || 'mysql' }}
-        run: mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < schema_changes.sql
-```
+Spins up a MySQL service
 
-locally:
+Waits for MySQL readiness
 
-first try
+Creates the subscribers database and a non-root user (sub_user)
 
-```bash
-bin/act
-```
+Applies Flyway migrations
 
-then if that doesn't work 
+Sets up Python and installs test dependencies
 
-```bash
-bin/act -P ubuntu-latest=-self-hosted
-```
+Runs unit tests for DB validation
 
-to run in the codespace.
+✅ Successful CI/CD Run Screenshot
 
-To shut down:
 
-```bash
-ansible-playbook down.yml
-```
 
-There is also a flyway migration here. To run the migration:
+🐳 Docker Setup (Local)
 
-```bash
-docker run --rm -v "/workspaces/<repo name>/migrations:/flyway/sql" redgate/flyway -user=root -password=Secret5555 -url=jdbc:mysql://172.17.0.1:3306/flyway_test migrate
-```
+You can verify that the MySQL container is running with the following:
 
-This is a reproducible mysql setup, with a flyway migration. It is also the start of an example of using flyway and github actions together. Flyway (jdbc) needs the database to exist. The github action creates it if it doesn't exist and flyway takes over from there.
+docker ps
+
+Docker Screenshot
+
+
+
+⚙️ Flyway Migration CLI
+
+We used Flyway 9.22.0 for schema versioning and applied SQL migrations:
+
+./flyway-9.22.0/flyway -url="jdbc:mysql://127.0.0.1:3306/subscribers" \
+-user=sub_user -password=subpass \
+-locations=filesystem:migrations migrate
+
+Flyway Run Screenshot
+
+
+
+🧪 Python Unit Tests
+
+Tested basic DB operations using Python's unittest module and mysql-connector-python:
+
+Create subscriber
+
+Read subscriber
+
+Update subscriber
+
+Delete subscriber
+
+Unit Test Screenshot
+
+
+
+🧩 Issues & Troubleshooting
+
+❌ Issue 1: "Unknown Database 'subscribers'"
+
+Cause: Flyway was trying to migrate before the database was created.
+
+Fix: Added a step in the GitHub workflow to create the database using the mysql CLI before Flyway runs.
+
+❌ Issue 2: "Access denied for user 'sub_user'@'172.18.0.1'"
+
+Cause: The user sub_user lacked permissions or was not created in the CI environment.
+
+Fix: Added SQL commands in the workflow to create the user with necessary privileges:
+
+CREATE USER IF NOT EXISTS 'sub_user'@'%' IDENTIFIED BY 'subpass';
+GRANT ALL PRIVILEGES ON subscribers.* TO 'sub_user'@'%';
+FLUSH PRIVILEGES;
+
+✅ Final Status
+
+✅ Flyway migrations run successfully both locally and in GitHub Actions
+
+✅ Python unit tests validate schema and CRUD operations
+
+✅ All errors resolved and CI pipeline is green
+
+👨‍💻 Contributors
+
+Student: jpremchander
+
+Course: PROG8850 - Database Administration and Automation
+
+📌 How to Run Locally
