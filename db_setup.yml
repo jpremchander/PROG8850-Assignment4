@@ -12,7 +12,11 @@
     - name: Create 'subscribers' database
       ansible.builtin.shell: |
         docker exec prog8850-assignment4-db-1 mysql -uroot -pSecret5555 -e "CREATE DATABASE IF NOT EXISTS subscribers;"
+      args:
+        warn: false
 
     - name: Create 'sub_user' with privileges on subscribers DB
       ansible.builtin.shell: |
         docker exec prog8850-assignment4-db-1 mysql -uroot -pSecret5555 -e "CREATE USER IF NOT EXISTS 'sub_user'@'%' IDENTIFIED BY 'subpass'; GRANT ALL PRIVILEGES ON subscribers.* TO 'sub_user'@'%'; FLUSH PRIVILEGES;"
+      args:
+        warn: false
