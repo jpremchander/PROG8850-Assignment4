@@ -1,109 +1,198 @@
-PROG8850 Assignment 4: Database Automation with Flyway and CI/CD
 
-This repository demonstrates a complete database migration and testing automation setup using Flyway, Ansible, MySQL, and GitHub Actions. The goal is to automate schema migrations and verify database functionality through unit tests.
+# PROG8850 Assignment 4: Database Automation with Flyway, Ansible, and CI/CD
 
-📁 Folder Structure
+This repository demonstrates automated database migration and testing using Flyway, Ansible, MySQL, and GitHub Actions. It fulfills the requirements for Assignment 4 of PROG8850.
 
-├── .github
-│   └── workflows
-│       └── flyway_ci.yml           # GitHub Actions workflow file
-├── flyway-9.22.0/                  # Flyway CLI extracted
-├── migrations/                     # Initial migration files
-│   ├── V1__Create_subscribers_table.sql
-│   ├── V2__Insert_seed_data.sql
-│   └── V3__Create_person_table.sql
-├── tests/
-│   └── test_subscribers.py         # Python unit tests for DB operations
-├── db_setup.yml                    # Ansible playbook to set up DB and user
-└── README.md
+## Table of Contents
 
-✅ GitHub Actions CI/CD Pipeline
+1. [Assignment Requirements](#assignment-requirements)
+2. [Folder Structure](#folder-structure)
+3. [CI/CD Pipeline Overview](#cicd-pipeline-overview)
+4. [Local Setup Instructions](#local-setup-instructions)
+5. [Troubleshooting](#troubleshooting)
+6. [Screenshots](#screenshots)
+7. [Submission](#submission)
 
-Workflow Summary
+---
 
-The GitHub Actions workflow performs the following:
+## Assignment Requirements
 
-Spins up a MySQL service
+**Question 1:** Analysis and comparison of two database migration tools (see PDF submission).
 
-Waits for MySQL readiness
+**Question 2:**
 
-Creates the subscribers database and a non-root user (sub_user)
+- Use Ansible playbooks (`up.yml`, `down.yml`) to scaffold and remove a MySQL environment.
+- Use Flyway for initial and incremental migrations (two folders: `migrations/` and `migrations_incremental/`).
+- Automate migrations and tests with GitHub Actions.
+- Print deployment status to the console.
+- Provide clear instructions and repository link in README.
 
-Applies Flyway migrations
+---
 
-Sets up Python and installs test dependencies
+## Folder Structure
 
-Runs unit tests for DB validation
+.github/workflows/
+		flyway.yml                # GitHub Actions workflow for CI/CD
+		flyway-9.22.0/            # Flyway CLI and config
+		migrations/                # Initial migration SQL files
+		migrations_incremental/    # Incremental migration SQL files
+		tests/                     # Python unit tests for CRUD operations
+		up.yml                     # Ansible playbook to set up environment
+		down.yml                   # Ansible playbook to tear down environment
+		README.md                  # This documentation
+```
+.github/workflows/
+  flyway.yml                # GitHub Actions workflow for CI/CD
+flyway-9.22.0/              # Flyway CLI and config
+migrations/                  # Initial migration SQL files
+migrations_incremental/      # Incremental migration SQL files
+tests/                      # Python unit tests for CRUD operations
+up.yml                      # Ansible playbook to set up environment
+down.yml                    # Ansible playbook to tear down environment
+README.md                   # This documentation
+```
 
-✅ Successful CI/CD Run Screenshot
-
-![alt text](image.png)
-
-🐳 Docker Setup (Local)
-
-You can verify that the MySQL container is running with the following:
-
-docker ps
-
-![alt text](image-2.png)
-
-⚙️ Flyway Migration CLI
-
-We used Flyway 9.22.0 for schema versioning and applied SQL migrations:
-
-./flyway-9.22.0/flyway -url="jdbc:mysql://127.0.0.1:3306/subscribers" \
--user=sub_user -password=subpass \
--locations=filesystem:migrations migrate
-
-![alt text](image-3.png)
-
-🧪 Python Unit Tests
-
-Tested basic DB operations using Python's unittest module and mysql-connector-python:
-
-Create subscriber
-
-Read subscriber
-
-Update subscriber
-
-Delete subscriber
-
-![alt text](image-4.png)
+---
 
 
-📌 How to Run Locally
+## CI/CD Pipeline Overview
 
-# ansible-playbook up.yml
-
-# ansible-playbook db_setup.yml
-
-# ./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers" -user=sub_user -password=subpass -locations=filesystem:migrations migrate
-
-# python3 -m unittest discover tests
+The GitHub Actions workflow (`flyway.yml`) performs the following steps:
 
 
-🧩 Issues & Troubleshooting
+1. Spins up a MySQL service
+2. Waits for MySQL readiness
+3. Creates the `subscribers` database and a non-root user (`sub_user`)
+4. Applies Flyway migrations from both `migrations/` and `migrations_incremental/`
+5. Sets up Python and installs test dependencies
+6. Runs unit tests for CRUD operations
+7. Prints deployment completion message to the console
 
-❌ Issue 1: "Unknown Database 'subscribers'"
 
-Cause: Flyway was trying to migrate before the database was created.
+---
 
-Fix: Added a step in the GitHub workflow to create the database using the mysql CLI before Flyway runs.
+## Local Setup Instructions
 
-❌ Issue 2: "Access denied for user 'sub_user'@'172.18.0.1'"
 
-Cause: The user sub_user lacked permissions or was not created in the CI environment.
+1. **Set up environment with Ansible:**
 
-Fix: Added SQL commands in the workflow to create the user with necessary privileges:
+```sh
+ansible-playbook up.yml
+ansible-playbook db_setup.yml
+```
 
+2. **Run Flyway migrations:**
+
+```sh
+./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers" -user=sub_user -password=subpass -locations=filesystem:migrations migrate
+./flyway-9.22.0/flyway -url="jdbc:mysql://localhost:3306/subscribers" -user=sub_user -password=subpass -locations=filesystem:migrations_incremental migrate
+```
+
+3. **Run Python unit tests:**
+
+```sh
+python3 -m unittest discover tests
+```
+
+4. **Tear down environment:**
+
+```sh
+ansible-playbook down.yml
+```
+
+## Troubleshooting
+
+
+**Issue 1:** "Unknown Database 'subscribers'"
+
+- *Cause:* Flyway was trying to migrate before the database was created.
+- *Fix:* Added a step in the workflow to create the database before running Flyway.
+
+**Issue 2:** "Access denied for user 'sub_user'@'172.18.0.1'"
+
+- *Cause:* The user lacked permissions or was not created in the CI environment.
+- *Fix:* SQL commands in the workflow create the user and grant privileges:
+
+```sql
 CREATE USER IF NOT EXISTS 'sub_user'@'%' IDENTIFIED BY 'subpass';
 GRANT ALL PRIVILEGES ON subscribers.* TO 'sub_user'@'%';
 FLUSH PRIVILEGES;
+```
 
-👨‍💻 Author
+## Screenshots
+
+CI/CD Run:
+
+![CI/CD Run](image.png)
+
+Docker Setup:
+
+![Docker](image-2.png)
+
+Flyway Migration:
+
+![Flyway](image-3.png)
+
+Python Unit Tests:
+
+![Unit Tests](image-4.png)
+
+## Submission
+
+- PDF with Question 1 analysis and comparison (see attached or repo root)
+- Repository link: <https://github.com/jpremchander/PROG8850-Assignment4>
+- For any issues, contact: jpremchander
+
+## Author
 
 Student: jpremchander
+Course: PROG8850 - Database Administration and Automation - Assignment 4
 
-Course: PROG8850 - Database Administration and Automation -Assignment 4
+---
+
+## Troubleshooting
+
+**Issue 1:** "Unknown Database 'subscribers'"
+  - *Cause:* Flyway was trying to migrate before the database was created.
+  - *Fix:* Added a step in the workflow to create the database before running Flyway.
+
+**Issue 2:** "Access denied for user 'sub_user'@'172.18.0.1'"
+  - *Cause:* The user lacked permissions or was not created in the CI environment.
+  - *Fix:* SQL commands in the workflow create the user and grant privileges:
+	 ```sql
+	 CREATE USER IF NOT EXISTS 'sub_user'@'%' IDENTIFIED BY 'subpass';
+	 GRANT ALL PRIVILEGES ON subscribers.* TO 'sub_user'@'%';
+	 FLUSH PRIVILEGES;
+	 ```
+
+---
+
+## Screenshots
+
+CI/CD Run:
+![CI/CD Run](image.png)
+
+Docker Setup:
+![Docker](image-2.png)
+
+Flyway Migration:
+![Flyway](image-3.png)
+
+Python Unit Tests:
+![Unit Tests](image-4.png)
+
+---
+
+## Submission
+
+- PDF with Question 1 analysis and comparison (see attached or repo root)
+- Repository link: https://github.com/jpremchander/PROG8850-Assignment4
+- For any issues, contact: jpremchander
+
+---
+
+## Author
+
+Student: jpremchander
+Course: PROG8850 - Database Administration and Automation - Assignment 4
 
